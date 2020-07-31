@@ -20,8 +20,8 @@ const store = createStore(
   composeWithDevTools(
     applyMiddleware(...middleware),
     reactReduxFirebase(firebaseConfig, {
-      useFirestoreForProfile: true,
-      userProfile: "users",
+      // useFirestoreForProfile: true,
+      // userProfile: "users",
       attachAuthIsReady: true,
     }),
     reduxFirestore(firebaseConfig)

@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from "react";
-import { Link, Redirect } from "react-router-dom";
+import { Redirect, withRouter } from "react-router-dom";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
 
@@ -17,7 +17,11 @@ import IconButton from "@material-ui/core/IconButton";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { AiOutlineMail } from "react-icons/ai";
 
-import { logIn } from "../../store/actions/authActions";
+import {
+  logIn,
+  signInWithGoogle,
+  resetPassword,
+} from "../../store/actions/authActions";
 
 const useStyles = makeStyles((theme) => ({
   margin: {
@@ -31,15 +35,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Login = ({ auth: { uid, isLoaded }, logIn }) => {
+const Login = ({
+  auth: { uid, isLoaded, emailVerified },
+  logIn,
+  signInWithGoogle,
+  resetPassword,
+}) => {
   const formik = useFormik({
     initialValues: { email: "", password: "" },
     validationSchema: Yup.object({
       email: Yup.string().email("Invalid E-mail format").required("Required!"),
       password: Yup.string().required("Required!"),
     }),
-    onSubmit: (values) => {
-      logIn(values);
+    onSubmit: (values, { resetForm }) => {
+      logIn(values, resetForm, formik.initialValues);
     },
   });
   const classes = useStyles();
@@ -58,7 +67,7 @@ const Login = ({ auth: { uid, isLoaded }, logIn }) => {
   }
 
   // Redirect if logged-in
-  else if (uid) {
+  else if (uid && emailVerified) {
     return <Redirect to="/" />;
   }
 
@@ -146,9 +155,18 @@ const Login = ({ auth: { uid, isLoaded }, logIn }) => {
             </div>
           </form>
           <hr />
+          <button
+            className="btn btn-google btn-user btn-block"
+            onClick={signInWithGoogle}
+          >
+            <i className="fab fa-google fa-fw"></i> Login with Google
+          </button>
+          <hr />
           <h6>
             Trouble Logging-In?{" "}
-            <Link to="/forgotPassword">Forgot Password</Link>
+            <a href="#" onClick={resetPassword} rel="noopener noreferrer">
+              Forgot Password
+            </a>
           </h6>
           <hr />
           <h6>
@@ -165,6 +183,8 @@ const Login = ({ auth: { uid, isLoaded }, logIn }) => {
 
 Login.propTypes = {
   logIn: PropTypes.func.isRequired,
+  resetPassword: PropTypes.func.isRequired,
+  signInWithGoogle: PropTypes.func.isRequired,
   auth: PropTypes.object.isRequired,
 };
 
@@ -172,4 +192,8 @@ const mapStateToProps = (state) => ({
   auth: state.firebase.auth,
 });
 
-export default connect(mapStateToProps, { logIn })(Login);
+export default connect(mapStateToProps, {
+  logIn,
+  signInWithGoogle,
+  resetPassword,
+})(withRouter(Login));

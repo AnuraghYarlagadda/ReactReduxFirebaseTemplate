@@ -9,7 +9,9 @@ import Home from "./Home";
 import PrivateRoute from "../routing/PrivateRoute";
 import NotFound from "./NotFound";
 
-const Landing = ({ auth: { uid, isLoaded } }) => {
+const Landing = ({ auth: { uid, isLoaded, emailVerified, providerData } }) => {
+  const providerId = providerData && providerData[0].providerId;
+
   //If Loading Show Spinner
   if (!isLoaded) {
     return (
@@ -17,8 +19,8 @@ const Landing = ({ auth: { uid, isLoaded } }) => {
         <CircularProgress size="5rem" color="secondary" />
       </div>
     );
-  } else if (uid) {
-    return <NavBar />;
+  } else if (uid && emailVerified) {
+    return <NavBar providerId={providerId} />;
   }
 
   return (
@@ -26,7 +28,6 @@ const Landing = ({ auth: { uid, isLoaded } }) => {
       <Alert />
       <Switch>
         <Route exact path="/" component={Home} />
-
         <PrivateRoute component={NotFound} />
       </Switch>
     </section>

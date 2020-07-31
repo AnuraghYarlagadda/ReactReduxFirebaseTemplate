@@ -16,7 +16,7 @@ import IconButton from "@material-ui/core/IconButton";
 import { MdAccountCircle, MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { AiOutlineMail } from "react-icons/ai";
 
-import { signUp } from "../../store/actions/authActions";
+import { signUp, signInWithGoogle } from "../../store/actions/authActions";
 
 const lowercaseRegex = /(?=.*[a-z])/;
 const uppercaseRegex = /(?=.*[A-Z])/;
@@ -32,7 +32,11 @@ const useStyles = makeStyles((theme) => ({
     },
   },
 }));
-const Register = ({ auth: { uid, isLoaded }, signUp }) => {
+const Register = ({
+  auth: { uid, isLoaded, emailVerified },
+  signUp,
+  signInWithGoogle,
+}) => {
   const formik = useFormik({
     initialValues: { name: "", email: "", password: "", confirm_password: "" },
     validationSchema: Yup.object({
@@ -51,8 +55,8 @@ const Register = ({ auth: { uid, isLoaded }, signUp }) => {
         .oneOf([Yup.ref("password")], "Password's do not match")
         .required("Required!"),
     }),
-    onSubmit: (values) => {
-      signUp(values);
+    onSubmit: (values, { resetForm }) => {
+      signUp(values, resetForm, formik.initialValues);
     },
   });
   const classes = useStyles();
@@ -72,7 +76,7 @@ const Register = ({ auth: { uid, isLoaded }, signUp }) => {
   }
 
   // Redirect if logged-in
-  else if (uid) {
+  else if (uid && emailVerified) {
     return <Redirect to="/" />;
   }
 
@@ -85,7 +89,7 @@ const Register = ({ auth: { uid, isLoaded }, signUp }) => {
         <div className="card-body">
           <i className="fas fa-user"></i> Please fill in this form to create an
           account!
-          <form onSubmit={formik.handleSubmit}>
+          <form onSubmit={formik.handleSubmit} id="form">
             <FormControl
               className={classes.margin}
               fullWidth
@@ -240,6 +244,17 @@ const Register = ({ auth: { uid, isLoaded }, signUp }) => {
             </div>
           </form>
           <hr />
+          <p>
+            Don't like wasting time in filling the form..? SignIn with Google
+            Directly
+          </p>
+          <button
+            className="btn btn-google btn-user btn-block"
+            onClick={signInWithGoogle}
+          >
+            <i className="fab fa-google fa-fw"></i> Login with Google
+          </button>
+          <hr />
           <h6>
             Already have an account?{" "}
             <a href="#login" className="js-scroll-trigger">
@@ -253,6 +268,7 @@ const Register = ({ auth: { uid, isLoaded }, signUp }) => {
 };
 Register.propTypes = {
   signUp: PropTypes.func.isRequired,
+  signInWithGoogle: PropTypes.func.isRequired,
   auth: PropTypes.object.isRequired,
 };
 
@@ -260,4 +276,6 @@ const mapStateToProps = (state) => ({
   auth: state.firebase.auth,
 });
 
-export default connect(mapStateToProps, { signUp })(withRouter(Register));
+export default connect(mapStateToProps, { signUp, signInWithGoogle })(
+  withRouter(Register)
+);

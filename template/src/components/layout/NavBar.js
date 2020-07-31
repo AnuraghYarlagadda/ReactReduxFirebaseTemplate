@@ -1,14 +1,21 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Fragment } from "react";
 import CustomLink from "../ui/CustomLink";
 import $ from "jquery";
 import { Route, Switch, Link } from "react-router-dom";
 import { connect } from "react-redux";
-import { logOut } from "../../store/actions/authActions";
+import {
+  logOut,
+  changePassword,
+  editProfile,
+  deleteAccountPassword,
+  deleteAccountGoogle,
+} from "../../store/actions/authActions";
 import PropTypes from "prop-types";
 import { RiAccountCircleLine } from "react-icons/ri";
 import Swal from "sweetalert2/dist/sweetalert2.all.min.js";
 import "sweetalert2/src/sweetalert2.scss";
-
+import { compose } from "redux";
+import { firestoreConnect } from "react-redux-firebase";
 import Routes from "../routing/Routes";
 
 const swalWithBootstrapButtons = Swal.mixin({
@@ -19,7 +26,15 @@ const swalWithBootstrapButtons = Swal.mixin({
   buttonsStyling: false,
 });
 
-const NavBar = ({ profile, logOut }) => {
+const NavBar = ({
+  profile,
+  logOut,
+  changePassword,
+  editProfile,
+  deleteAccountPassword,
+  deleteAccountGoogle,
+  providerId,
+}) => {
   useEffect(() => {
     // Toggle the side navigation
     $("#sidebarToggle, #sidebarToggleTop").on("click", function (e) {
@@ -82,7 +97,197 @@ const NavBar = ({ profile, logOut }) => {
       e.preventDefault();
     });
   }, []);
-
+  console.log(providerId);
+  const passwordLinks = (
+    <li className="nav-item dropdown no-arrow">
+      <a
+        className="nav-link dropdown-toggle"
+        rel="noopener noreferrer"
+        href="#"
+        id="userDropdown"
+        role="button"
+        data-toggle="dropdown"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        <span className="mr-2 d-none d-lg-inline text-gray-600 small">
+          {profile ? `${profile.displayName}` : ``}
+        </span>
+        {profile ? (
+          profile.photoURL ? (
+            <img
+              style={{ borderRadius: "50%" }}
+              src={profile.photoURL}
+              width="25rem"
+              height="25rem"
+              alt="profile"
+            ></img>
+          ) : (
+            <RiAccountCircleLine size="1.5rem" />
+          )
+        ) : (
+          ""
+        )}
+      </a>
+      {/* <!-- Dropdown - User Information --> */}
+      <div
+        className="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+        aria-labelledby="userDropdown"
+      >
+        <a
+          className="dropdown-item"
+          rel="noopener noreferrer"
+          href="#"
+          onClick={() => editProfile(profile && profile.email)}
+        >
+          <i className="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+          Edit Profile
+        </a>
+        <a
+          className="dropdown-item"
+          rel="noopener noreferrer"
+          href="#"
+          onClick={() => changePassword(profile && profile.email)}
+        >
+          <i className="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+          Change Password
+        </a>
+        <a
+          className="dropdown-item"
+          rel="noopener noreferrer"
+          href="#"
+          onClick={() => deleteAccountPassword(profile && profile.email)}
+        >
+          <i className="fas fa-trash fa-sm fa-fw mr-2 text-gray-400"></i>
+          Delete Account
+        </a>
+        <CustomLink className="dropdown-item" to="#" tag="button">
+          <i className="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+          Activity Log
+        </CustomLink>
+        <div className="dropdown-divider"></div>
+        <a
+          className="dropdown-item"
+          rel="noopener noreferrer"
+          href="#"
+          data-toggle="modal"
+          data-target="#logoutModal"
+          onClick={() =>
+            swalWithBootstrapButtons
+              .fire({
+                title: "Are you sure?",
+                text: "Do you want to Logout?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Logout!",
+                cancelButtonText: "No, Stay here!",
+                reverseButtons: true,
+              })
+              .then((result) => {
+                if (result.value) {
+                  logOut();
+                } else {
+                  Swal.fire({
+                    icon: "error",
+                    title: "Log-Out cancelled!",
+                    text: "Welcome Back 😃",
+                  });
+                }
+              })
+          }
+        >
+          <i className="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+          Logout
+        </a>
+      </div>
+    </li>
+  );
+  const googleLinks = (
+    <li className="nav-item dropdown no-arrow">
+      <a
+        className="nav-link dropdown-toggle"
+        rel="noopener noreferrer"
+        href="#"
+        id="userDropdown"
+        role="button"
+        data-toggle="dropdown"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        <span className="mr-2 d-none d-lg-inline text-gray-600 small">
+          {profile ? `${profile.displayName}` : ``}
+        </span>
+        {profile ? (
+          profile.photoURL ? (
+            <img
+              style={{ borderRadius: "50%" }}
+              src={profile.photoURL}
+              width="25rem"
+              height="25rem"
+              alt="profile"
+            ></img>
+          ) : (
+            <RiAccountCircleLine size="1.5rem" />
+          )
+        ) : (
+          ""
+        )}
+      </a>
+      {/* <!-- Dropdown - User Information --> */}
+      <div
+        className="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+        aria-labelledby="userDropdown"
+      >
+        <a
+          className="dropdown-item"
+          rel="noopener noreferrer"
+          href="#"
+          onClick={() => deleteAccountGoogle(profile && profile.email)}
+        >
+          <i className="fas fa-trash fa-sm fa-fw mr-2 text-gray-400"></i>
+          Delete Account
+        </a>
+        <CustomLink className="dropdown-item" to="#" tag="button">
+          <i className="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+          Activity Log
+        </CustomLink>
+        <div className="dropdown-divider"></div>
+        <a
+          className="dropdown-item"
+          rel="noopener noreferrer"
+          href="#"
+          data-toggle="modal"
+          data-target="#logoutModal"
+          onClick={() =>
+            swalWithBootstrapButtons
+              .fire({
+                title: "Are you sure?",
+                text: "Do you want to Logout?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, Logout!",
+                cancelButtonText: "No, Stay here!",
+                reverseButtons: true,
+              })
+              .then((result) => {
+                if (result.value) {
+                  logOut();
+                } else {
+                  Swal.fire({
+                    icon: "error",
+                    title: "Log-Out cancelled!",
+                    text: "Welcome Back 😃",
+                  });
+                }
+              })
+          }
+        >
+          <i className="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+          Logout
+        </a>
+      </div>
+    </li>
+  );
   return (
     <div id="page-top">
       <div id="wrapper">
@@ -316,83 +521,9 @@ const NavBar = ({ profile, logOut }) => {
                 <div className="topbar-divider d-none d-sm-block"></div>
 
                 {/* <!-- Nav Item - User Information --> */}
-                <li className="nav-item dropdown no-arrow">
-                  <a
-                    className="nav-link dropdown-toggle"
-                    rel="noopener noreferrer"
-                    href="#"
-                    id="userDropdown"
-                    role="button"
-                    data-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    <span className="mr-2 d-none d-lg-inline text-gray-600 small">
-                      {profile ? `${profile.name}` : ``}
-                    </span>
-                    <RiAccountCircleLine size="1.3rem" />{" "}
-                  </a>
-                  {/* <!-- Dropdown - User Information --> */}
-                  <div
-                    className="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                    aria-labelledby="userDropdown"
-                  >
-                    <CustomLink
-                      className="dropdown-item"
-                      to="/editProfile"
-                      tag="a"
-                    >
-                      <i className="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                      Edit Profile
-                    </CustomLink>
-                    <CustomLink
-                      className="dropdown-item"
-                      to="/changePassword"
-                      tag="a"
-                    >
-                      <i className="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                      Change Password
-                    </CustomLink>
-                    <CustomLink className="dropdown-item" to="#" tag="a">
-                      <i className="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                      Activity Log
-                    </CustomLink>
-                    <div className="dropdown-divider"></div>
-                    <a
-                      className="dropdown-item"
-                      rel="noopener noreferrer"
-                      href="#"
-                      data-toggle="modal"
-                      data-target="#logoutModal"
-                      onClick={() =>
-                        swalWithBootstrapButtons
-                          .fire({
-                            title: "Are you sure?",
-                            text: "Do you want to Logout?",
-                            icon: "warning",
-                            showCancelButton: true,
-                            confirmButtonText: "Yes, Logout!",
-                            cancelButtonText: "No, Stay here!",
-                            reverseButtons: true,
-                          })
-                          .then((result) => {
-                            if (result.value) {
-                              logOut();
-                            } else {
-                              Swal.fire({
-                                icon: "error",
-                                title: "Log-Out cancelled!",
-                                text: "Welcome Back 😃",
-                              });
-                            }
-                          })
-                      }
-                    >
-                      <i className="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                      Logout
-                    </a>
-                  </div>
-                </li>
+                <Fragment>
+                  {providerId === "google.com" ? googleLinks : passwordLinks}
+                </Fragment>
               </ul>
             </nav>
             {/* <!-- End of Topbar --> */}
@@ -429,11 +560,29 @@ const NavBar = ({ profile, logOut }) => {
 
 NavBar.propTypes = {
   logOut: PropTypes.func.isRequired,
-  profile: PropTypes.object.isRequired,
+  changePassword: PropTypes.func.isRequired,
+  editProfile: PropTypes.func.isRequired,
+  deleteAccountPassword: PropTypes.func.isRequired,
+  deleteAccountGoogle: PropTypes.func.isRequired,
+  profile: PropTypes.object,
 };
 
-const mapStateToProps = (state) => ({
-  profile: state.firebase.profile,
-});
+const mapStateToProps = (state) => {
+  const users = state.firestore.data.users;
+  const email = state.firebase.auth.email;
+  const user = users ? users[email] : null;
+  return {
+    profile: user,
+  };
+};
 
-export default connect(mapStateToProps, { logOut })(NavBar);
+export default compose(
+  connect(mapStateToProps, {
+    logOut,
+    changePassword,
+    editProfile,
+    deleteAccountPassword,
+    deleteAccountGoogle,
+  }),
+  firestoreConnect([{ collection: "users" }])
+)(NavBar);
