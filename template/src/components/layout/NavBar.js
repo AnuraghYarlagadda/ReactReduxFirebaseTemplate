@@ -220,6 +220,7 @@ const NavBar = ({
         {profile ? (
           profile.photoURL ? (
             <img
+              referrerPolicy="no-referrer"
               style={{ borderRadius: "50%" }}
               src={profile.photoURL}
               width="25rem"
