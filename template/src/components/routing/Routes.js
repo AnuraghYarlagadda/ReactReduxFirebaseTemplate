@@ -5,6 +5,7 @@ import PrivateRoute from "./PrivateRoute";
 import Dashboard from "../dashboard/Dashboard";
 import Login from "../auth/Login";
 import Register from "../auth/Register";
+import FileUtils from "../dashboard/FileUtils";
 import NotFound from "../layout/NotFound";
 
 const Routes = () => {
@@ -15,6 +16,7 @@ const Routes = () => {
         <PrivateRoute exact path="/" component={Dashboard} />
         <Route exact path="/register" component={Register} />
         <Route exact path="/login" component={Login} />
+        <PrivateRoute exact path="/fileUtils" component={FileUtils} />
         <PrivateRoute component={NotFound} />
       </Switch>
     </section>

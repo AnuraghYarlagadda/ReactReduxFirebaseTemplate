@@ -484,9 +484,9 @@ const NavBar = ({
 
           {/* <!-- Nav Item - File --> */}
           <li className="nav-item">
-            <CustomLink className="nav-link" to="/fileUpload" tag="a">
+            <CustomLink className="nav-link" to="/fileUtils" tag="a">
               <i className="fas fa-fw fa-table"></i>
-              <span>FileUpload</span>
+              <span>FileUtils</span>
             </CustomLink>
           </li>
 
